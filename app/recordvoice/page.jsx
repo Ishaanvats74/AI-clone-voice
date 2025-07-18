@@ -1,9 +1,15 @@
+'use client'
 import React from 'react'
+import AudioRcorder from '../Components/audioRcorder'
 
 const page = () => {
+
+ 
+
   return (
     <div>
-      hi
+      <input type="file" name="" id="" />
+      <AudioRcorder/>
     </div>
   )
 }
