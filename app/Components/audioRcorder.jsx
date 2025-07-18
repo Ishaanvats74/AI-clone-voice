@@ -1,10 +1,12 @@
 'use client';
 import React, { useRef, useState } from 'react'
+import { toast } from 'sonner';
 
 const AudioRcorder = () => {
     const [isRecording,setIsRecording] = useState(false)
     const [audioUrl,setAudioUrl] = useState("")
     const [audioBlob, setAudioBlob] = useState(null)
+    const [pause,setPause] = useState(false)
 
     const mediaRecorder = useRef(null)
     const audioRef = useRef();
@@ -24,6 +26,7 @@ const AudioRcorder = () => {
               const blob = new Blob(chunks,{type: "audio/webm"});
               setAudioBlob(blob);
               const url =  URL.createObjectURL(blob);
+              console.log(url)
               setAudioUrl(url)
               setIsRecording(false)
             };
@@ -34,9 +37,9 @@ const AudioRcorder = () => {
 
             recorder.start()
             mediaRecorder.current = recorder
-            
+
         } catch(error){
-          alert(error+ "")
+          toast.error(error+ "")
         }
     }
 
@@ -46,16 +49,55 @@ const AudioRcorder = () => {
           if (recorder && recorder.state !== "inactive") {
             recorder.stop()
             recorder.stream.getTracks().forEach((track) => {track.stop()});
-            alert("mediaRecorder is stoped")
+            toast("mediaRecorder is stoped")
             setIsRecording(false)
           } else{
-            alert("stream contains null ")
+            toast.error("stream contains null ")
           }
             
         } catch (error) {
-            alert(error+ "hi")
+            toast.error(error+ "stopRecording")
         }
       }
+
+      const handlePause = async()=>{
+        try {
+          const recorder = mediaRecorder.current;
+          recorder.pause()
+          setPause(true)
+          toast("mediaRecorder is paused")
+        } catch (error) {
+          toast.error(error+ "paused")
+        }
+      }
+
+      const handleResume = async () => {
+        try {
+          const recorder = mediaRecorder.current;
+          recorder.resume()
+          setPause(false)
+          toast("mediaRecorder is resumed")
+        } catch (error) {
+          toast.error(error+ "resume")
+        }
+      }
+
+      const handleUpload = async () => {
+        try {
+          const recorder = mediaRecorder.current;;
+          const res = await fetch("/api/audioUpload",{
+            method:"POST",
+            headers: {"Content-Type": "application/json"},
+            body:JSON.stringify(recorder,audioUrl),
+          })
+          const data = await res.json()
+          console.log(data)
+          
+        } catch (error) {
+          alert(error + "uploading error")
+        }
+      }
+
   return (
     <div>
         
@@ -64,10 +106,17 @@ const AudioRcorder = () => {
         <div>
             <button onClick={()=>handleRecord()}>start Recording</button>
             <audio ref={audioRef} controls src={audioUrl} /> 
+            <button onClick={()=>handleUpload()}>Upload</button>
         </div>
       ):(
         <div>
-            <div>Yess reording</div>
+          {pause?(
+            <button onClick={()=>handleResume()}>Resume reording</button>
+
+          ): (
+            <button onClick={()=>handlePause()}>Pause reording</button>
+
+          )}
             <button onClick={()=>handleStopRecording()}>Stop Recording</button>
         </div>
       )}

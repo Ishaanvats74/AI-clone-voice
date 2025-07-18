@@ -1,5 +1,5 @@
 import {ClerkProvider,SignInButton,SignUpButton,SignedIn,SignedOut,UserButton} from '@clerk/nextjs'
-
+import { Toaster } from 'sonner';
 import './globals.css'
 
 
@@ -30,6 +30,7 @@ export default function RootLayout({children}) {
             </SignedIn>
           </header>
           {children}
+          <Toaster />
         </body>
       </html>
     </ClerkProvider>
